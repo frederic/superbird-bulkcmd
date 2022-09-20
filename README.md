@@ -1,6 +1,6 @@
 # [superbird-bulkcmd](https://github.com/frederic/superbird-bulkcmd)
 
-Spotify Car Thing (superbird) resources to access U-Boot shell over USB. No bug exploited, it's a feature.
+[Spotify Car Thing](https://carthing.spotify.com/) (superbird) resources to access U-Boot shell over USB. No bug exploited, it's a feature.
 
 *Note: this method has been tested on the factory firmware (device never used/updated).*
 
