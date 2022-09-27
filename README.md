@@ -12,7 +12,7 @@ You are solely responsible for any damage caused to your hardware/software/keys/
 - superbird.bl2.encrypted.bin : BL2 image from factory firmware
 - superbird.bootloader.img : bootloader image from factory firmware
 
-## U-Boot shell over USB (USB burning mode):
+## [BootROM] U-Boot shell over USB (USB burning mode):
 Hold buttons 1 & 4 while booting target. A new USB device appears on host side :
 ```
 usb 1-1: New USB device found, idVendor=1b8e, idProduct=c003, bcdDevice= 0.20
@@ -33,7 +33,7 @@ usb 1-1: New USB device strings: Mfr=0, Product=0, SerialNumber=0
 ````
 The target is now in USB burning mode (implemented in U-Boot).
 
-## Dump EMMC over USB
+## [U-Boot] Dump EMMC over USB
 In U-Boot burning mode :
 ```shell
 ./update bulkcmd 'amlmmc part 1'
@@ -55,7 +55,7 @@ In U-Boot burning mode :
 ./update mread store data normal 0x889EA000 data.dump
 ```
 
-## Update *env* to enable Linux root shell over UART
+## [U-Boot] Update *env* to enable Linux root shell over UART
 *Note: Access to UART port requires to open the device.*
 
 In U-Boot burning mode :
@@ -72,11 +72,37 @@ In U-Boot burning mode :
 ./update bulkcmd 'env save'
 ```
 
-## Disable AVB2 & dm-verity
+## [U-Boot] Disable AVB2 & dm-verity
 Define *system_b* (/dev/mmcblk0p15) as root for Kernel (change to /dev/mmcblk0p14 for *system_a*).
 ```shell
 ./update bulkcmd 'amlmmc env'
 ./update bulkcmd 'setenv storeargs ${storeargs} setenv avb2 0\;'
 ./update bulkcmd 'setenv initargs ${initargs} ro root=/dev/mmcblk0p15'
 ./update bulkcmd 'env save'
+```
+
+## [Linux] Enable ADB over USB
+```shell
+mkdir /dev/usb-ffs
+mkdir /dev/usb-ffs/adb
+mount -t configfs none /sys/kernel/config/
+mkdir /sys/kernel/config/usb_gadget/g1
+echo 0x18d1 > /sys/kernel/config/usb_gadget/g1/idVendor
+echo 0x4e40 > /sys/kernel/config/usb_gadget/g1/idProduct
+echo 0x0223 > /sys/kernel/config/usb_gadget/g1/bcdDevice
+echo 0x0200 > /sys/kernel/config/usb_gadget/g1/bcdUSB
+mkdir /sys/kernel/config/usb_gadget/g1/strings/0x409
+echo 123456 > /sys/kernel/config/usb_gadget/g1/strings/0x409/serialnumber
+echo Spotify > /sys/kernel/config/usb_gadget/g1/strings/0x409/manufacturer
+echo Superbird > /sys/kernel/config/usb_gadget/g1/strings/0x409/product
+mkdir /sys/kernel/config/usb_gadget/g1/functions/ffs.adb
+mkdir /sys/kernel/config/usb_gadget/g1/configs/b.1
+mkdir /sys/kernel/config/usb_gadget/g1/configs/b.1/strings/0x409
+echo 500 > /sys/kernel/config/usb_gadget/g1/configs/b.1/MaxPower
+mount -t functionfs adb /dev/usb-ffs/adb
+ln -s /sys/kernel/config/usb_gadget/g1/configs/b.1 /sys/kernel/config/usb_gadget/g1/os_desc/b.1
+echo adb > /sys/kernel/config/usb_gadget/g1/configs/b.1/strings/0x409/configuration 
+ln -s /sys/kernel/config/usb_gadget/g1/functions/ffs.adb /sys/kernel/config/usb_gadget/g1/configs/b.1/f1
+/usr/bin/adbd &
+echo ff400000.dwc2_a > /sys/kernel/config/usb_gadget/g1/UDC
 ```
