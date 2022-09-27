@@ -1,27 +1,56 @@
 # [superbird-bulkcmd](https://github.com/frederic/superbird-bulkcmd)
 
-[Spotify Car Thing](https://carthing.spotify.com/) (superbird) resources to access U-Boot shell over USB. No bug exploited, it's a feature.
+[Spotify Car Thing](https://carthing.spotify.com/) (superbird) resources to access U-Boot shell over USB. No bug exploited, not a bug, it is a ["feature"](https://miro.medium.com/max/1200/1*KDfUqn6c66axcbsTPPWSpQ.jpeg).
 
 *Note: this method has been tested on the factory firmware (device never used/updated).*
 
 ## Disclaimer
 You are solely responsible for any damage caused to your hardware/software/keys/DRM licences/warranty/data/cat/etc...
 
-## Files
-- update : [Khadas tool](https://github.com/khadas/utils/blob/master/aml-flash-tool/tools/linux-x86/update)
-- superbird.bl2.encrypted.bin : BL2 image from factory firmware
-- superbird.bootloader.img : bootloader image from factory firmware
+## Requirements
+- A Car Thing (superbird) without USB password
+- Either a USB A to C, or a C to C cable
+- A PC running some flavor of 64-bit GNU Linux
+- `libusb-dev` installed
 
-## [BootROM] U-Boot shell over USB (USB burning mode):
-Hold buttons 1 & 4 while booting target. A new USB device appears on host side :
-```
+## FAQ
+Does this process void my warranty on this device?
+- Probably, assume so.                                                                                              
+Can I OTA afterwards?
+- NO - DM-Verity is disabled, and on-device partitions modified, OTA updates will fail, though given this device is EOL, we don't expect further OTA updates.
+Can I use stock?
+- Yes! Perfectly normal and usable, this just enables root access and ADB.
+Can I go back to stock after installing custom OS's or messing up the stock image?
+- Yes! - **WIP**
+
+## Files
+- /bin/: prebuilt set of required tools
+  - [update](https://github.com/khadas/utils/blob/master/aml-flash-tool/tools/linux-x86/update): Client for the USB Burning protocol implemented in Amlogic bootloaders
+- /bootloader/: prebuilt bootloader image to upload via USB
+  - superbird.bl2.encrypted.bin: BL2
+  - superbird.bootloader.img: BL3x, DDR, etc. 
+- /scripts/: Scripts used to simplify interacting with the devices
+
+# Guide
+1. Unplug the Car Thing from everything
+2. Clone/Download this repo locally, and change your shell's directory to it & ensure you `libusb-dev` installed
+3. Hold buttons 1 & 4 on the case, and plug the Car Thing into your PC via USB
+
+The host should see a new USB device connection in `dmesg` like this one:
+```text
 usb 1-1: New USB device found, idVendor=1b8e, idProduct=c003, bcdDevice= 0.20
 usb 1-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
 usb 1-1: Product: GX-CHIP
 usb 1-1: Manufacturer: Amlogic
 ```
+4. Release the button once this device has been detected by host computer.
+5. Execute script **root&#46;sh** to load and follow the instructions it provides.
+
+## Technical Explanation of the Process
+
+### [BootROM] U-Boot shell over USB (USB burning mode):
 Execute the following commands to load U-Boot over USB :
-```shell
+```
 ./update write ./superbird.bl2.encrypted.bin 0xfffa0000
 ./update run 0xfffa0000
 ./update bl2_boot ./superbird.bootloader.img
@@ -33,7 +62,7 @@ usb 1-1: New USB device strings: Mfr=0, Product=0, SerialNumber=0
 ````
 The target is now in USB burning mode (implemented in U-Boot).
 
-## [U-Boot] Dump EMMC over USB
+### [U-Boot] Dump EMMC over USB
 In U-Boot burning mode :
 ```shell
 ./update bulkcmd 'amlmmc part 1'
@@ -55,7 +84,7 @@ In U-Boot burning mode :
 ./update mread store data normal 0x889EA000 data.dump
 ```
 
-## [U-Boot] Update *env* to enable Linux root shell over UART
+### [U-Boot] Update *env* to enable Linux root shell over UART
 *Note: Access to UART port requires to open the device.*
 
 In U-Boot burning mode :
@@ -72,7 +101,7 @@ In U-Boot burning mode :
 ./update bulkcmd 'env save'
 ```
 
-## [U-Boot] Disable AVB2 & dm-verity
+### [U-Boot] Disable AVB2 & dm-verity
 Define *system_b* (/dev/mmcblk0p15) as root for Kernel (change to /dev/mmcblk0p14 for *system_a*).
 ```shell
 ./update bulkcmd 'amlmmc env'
@@ -81,7 +110,7 @@ Define *system_b* (/dev/mmcblk0p15) as root for Kernel (change to /dev/mmcblk0p1
 ./update bulkcmd 'env save'
 ```
 
-## [Linux] Enable ADB over USB
+### [Linux] Enable ADB over USB
 ```shell
 mkdir /dev/usb-ffs
 mkdir /dev/usb-ffs/adb
@@ -104,5 +133,14 @@ ln -s /sys/kernel/config/usb_gadget/g1/configs/b.1 /sys/kernel/config/usb_gadget
 echo adb > /sys/kernel/config/usb_gadget/g1/configs/b.1/strings/0x409/configuration 
 ln -s /sys/kernel/config/usb_gadget/g1/functions/ffs.adb /sys/kernel/config/usb_gadget/g1/configs/b.1/f1
 /usr/bin/adbd &
+sleep 3s
 echo ff400000.dwc2_a > /sys/kernel/config/usb_gadget/g1/UDC
 ```
+
+## Credits
+- Frederic Basse (frederic)/Nolen Johnson (npjohnson): The writeup, helping debug/develop/theorize the methodologies used
+- Sean Hoyt (deadman): The awesome hacked-logo image.
+
+## Relevant Device Soruce Code
+- U-Boot: [superbird-uboot](https://github.com/spsgsb/uboot/tree/buildroot-openlinux-201904-g12a)
+- GNU/Linux: [superbird-linux](https://github.com/spsgsb/kernel-common)

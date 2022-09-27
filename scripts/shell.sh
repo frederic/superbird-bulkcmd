@@ -1,0 +1,13 @@
+#!/bin/bash
+sudo update bulkcmd 'amlmmc env'
+sudo update bulkcmd 'setenv initargs init=/sbin/pre-init'
+sudo update bulkcmd 'setenv initargs ${initargs} ramoops.pstore_en=1'
+sudo update bulkcmd 'setenv initargs ${initargs} ramoops.record_size=0x8000'
+sudo update bulkcmd 'setenv initargs ${initargs} ramoops.console_size=0x4000'
+sudo update bulkcmd 'setenv initargs ${initargs} rootfstype=ext4'
+sudo update bulkcmd 'setenv initargs ${initargs} console=ttyS0,115200n8'
+sudo update bulkcmd 'setenv initargs ${initargs} no_console_suspend'
+sudo update bulkcmd 'setenv initargs ${initargs} earlycon=aml-uart,0xff803000'
+sudo update bulkcmd 'setenv storeargs ${storeargs} setenv avb2 0\;'
+sudo update bulkcmd 'setenv initargs ${initargs} ro root=/dev/mmcblk0p15'
+sudo update bulkcmd 'env save'
