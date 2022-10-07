@@ -62,6 +62,18 @@ usb 1-1: New USB device strings: Mfr=0, Product=0, SerialNumber=0
 ````
 The target is now in USB burning mode (implemented in U-Boot).
 
+### [U-Boot] Enable U-Boot shell at every boot
+This command modifies the *env* partition. Changes are persistent, so it must be executed only once.
+
+*Note: if not connected to USB host, the device continues default boot*
+```shell
+./update bulkcmd 'amlmmc env'
+./update bulkcmd 'setenv storeargs ${storeargs} run update\;'
+./update bulkcmd 'env save'
+```
+
+## Additional commands for advanced users
+
 ### [U-Boot] Dump EMMC over USB
 In U-Boot burning mode :
 ```shell
@@ -107,14 +119,6 @@ Define *system_b* (/dev/mmcblk0p15) as root for Kernel (change to /dev/mmcblk0p1
 ./update bulkcmd 'amlmmc env'
 ./update bulkcmd 'setenv storeargs ${storeargs} setenv avb2 0\;'
 ./update bulkcmd 'setenv initargs ${initargs} ro root=/dev/mmcblk0p15'
-./update bulkcmd 'env save'
-```
-
-### [U-Boot] Enable U-Boot shell at every boot
-*Note: if not connected to USB host, the device continues default boot*
-```shell
-./update bulkcmd 'amlmmc env'
-./update bulkcmd 'setenv storeargs ${storeargs} run update\;'
 ./update bulkcmd 'env save'
 ```
 
