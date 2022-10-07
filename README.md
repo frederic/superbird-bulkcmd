@@ -110,6 +110,14 @@ Define *system_b* (/dev/mmcblk0p15) as root for Kernel (change to /dev/mmcblk0p1
 ./update bulkcmd 'env save'
 ```
 
+### [U-Boot] Enable U-Boot shell at every boot
+*Note: if not connected to USB host, the device continues default boot*
+```shell
+./update bulkcmd 'amlmmc env'
+./update bulkcmd 'setenv storeargs ${storeargs} run update\;'
+./update bulkcmd 'env save'
+```
+
 ### [Linux] Enable ADB over USB
 ```shell
 mkdir /dev/usb-ffs
@@ -138,9 +146,9 @@ echo ff400000.dwc2_a > /sys/kernel/config/usb_gadget/g1/UDC
 ```
 
 ## Credits
-- Frederic Basse (frederic)/Nolen Johnson (npjohnson): The writeup, helping debug/develop/theorize the methodologies used
+- Frédéric Basse (frederic)/Nolen Johnson (npjohnson): The writeup, helping debug/develop/theorize the methodologies used
 - Sean Hoyt (deadman): The awesome hacked-logo image.
 
-## Relevant Device Soruce Code
+## Relevant Device Source Code
 - U-Boot: [superbird-uboot](https://github.com/spsgsb/uboot/tree/buildroot-openlinux-201904-g12a)
 - GNU/Linux: [superbird-linux](https://github.com/spsgsb/kernel-common)
