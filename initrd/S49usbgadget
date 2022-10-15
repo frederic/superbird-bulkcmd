@@ -1,0 +1,23 @@
+mkdir -p /dev/usb-ffs
+mkdir -p /dev/usb-ffs/adb
+mount -t configfs none /sys/kernel/config/
+mkdir -p /sys/kernel/config/usb_gadget/g1
+echo 0x18d1 > /sys/kernel/config/usb_gadget/g1/idVendor
+echo 0x4e40 > /sys/kernel/config/usb_gadget/g1/idProduct
+echo 0x0223 > /sys/kernel/config/usb_gadget/g1/bcdDevice
+echo 0x0200 > /sys/kernel/config/usb_gadget/g1/bcdUSB
+mkdir -p /sys/kernel/config/usb_gadget/g1/strings/0x409
+echo 123456 > /sys/kernel/config/usb_gadget/g1/strings/0x409/serialnumber
+echo Spotify > /sys/kernel/config/usb_gadget/g1/strings/0x409/manufacturer
+echo Superbird > /sys/kernel/config/usb_gadget/g1/strings/0x409/product
+mkdir -p /sys/kernel/config/usb_gadget/g1/functions/ffs.adb
+mkdir -p /sys/kernel/config/usb_gadget/g1/configs/b.1
+mkdir -p /sys/kernel/config/usb_gadget/g1/configs/b.1/strings/0x409
+echo 500 > /sys/kernel/config/usb_gadget/g1/configs/b.1/MaxPower
+mount -t functionfs adb /dev/usb-ffs/adb
+ln -s /sys/kernel/config/usb_gadget/g1/configs/b.1 /sys/kernel/config/usb_gadget/g1/os_desc/b.1
+echo adb > /sys/kernel/config/usb_gadget/g1/configs/b.1/strings/0x409/configuration
+ln -s /sys/kernel/config/usb_gadget/g1/functions/ffs.adb /sys/kernel/config/usb_gadget/g1/configs/b.1/f1
+/usr/bin/adbd &
+sleep 5s
+echo ff400000.dwc2_a > /sys/kernel/config/usb_gadget/g1/UDC

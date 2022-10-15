@@ -1,0 +1,88 @@
+#!/bin/sh
+#Mount things needed by this script
+/bin/mount -t sysfs sysfs /sys
+/bin/mount -t devtmpfs devtmpfs /dev
+/bin/mount -t proc proc /proc
+echo Beginning init from initrd
+#Create device nodes
+mdev -s
+
+#Function for parsing command line options with "=" in them
+# get_opt("init=/sbin/init") will return "/sbin/init"
+get_opt() {
+    echo "$@" | cut -d "=" -f 2
+}
+
+#Defaults
+slot_suffix="_a"
+init="/sbin/pre-init"
+root="/dev/system"
+rootfstype=
+kernel_version=
+#Process command line options
+for i in $(cat /proc/cmdline); do
+    case $i in
+        root\=*)
+            root=$(get_opt $i)
+            ;;
+        rootfstype\=*)
+            rootfstype=$(get_opt $i)
+            ;;
+        init\=*)
+            init=$(get_opt $i)
+            ;;
+        androidboot.slot_suffix\=*)
+            slot_suffix=$(get_opt $i)
+            ;;
+        kernel_version\=*)
+            kernel_version=$(get_opt $i)
+            ;;
+    esac
+done
+
+#Mount the root device
+root_ab=${root}${slot_suffix}
+#Waiting for device to become ready
+TimedOut=10000 #10*1000 milisecond
+WaitedTime=0
+while [ "$WaitedTime" -lt "$TimedOut" ]
+do
+    if [ -b "${root}" ]; then
+        echo "${root} is ready now."
+        break
+    elif [ -b "${root_ab}" ]; then
+        echo "${root_ab} is ready now."
+        root=${root_ab}
+        break
+    fi
+    sleep 0.1
+    WaitedTime=$((WaitedTime+100))
+    echo "${root} is not ready.  Waited for ${WaitedTime} milisecond"
+done
+
+if [ "${rootfstype}" != "" ]; then
+    mount -t ${rootfstype} -o ro "${root}" /mnt
+else
+    mount -o ro "${root}" /mnt
+fi
+
+#Check if $init exists and is executable
+if [[ -x "/mnt/${init}" ]] ; then
+    #Unmount all other mounts so that the ram used by
+    #the initramfs can be cleared after switch_root
+    umount /sys /proc /dev
+
+    #Overlay ADB script in initd scripts
+    mount --bind /S49usbgadget /mnt/etc/init.d/S49usbgadget
+
+    #Switch to the new root and execute init
+    /bin/mount -t devtmpfs devtmpfs /mnt/dev
+    exec 0</mnt/dev/console
+    exec 1>/mnt/dev/console
+    exec 2>/mnt/dev/console
+    exec switch_root -c /dev/console /mnt "${init}"
+fi
+
+#This will only be run if the exec above failed
+echo "Failed to switch root, dropping to a shell"
+exec /sbin/init "$@"
