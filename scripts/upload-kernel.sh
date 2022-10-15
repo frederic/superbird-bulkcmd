@@ -8,10 +8,11 @@ INITRD=$DIR/../images/superbird.initrd.img # bin/mkimage -n uInitrd -A arm -O li
 INITRD_ADDR=0x13000000
 ENV=$DIR/env.txt
 ENV_ADDR=0x13000000
+ENV_SIZE=$(stat -c %s $ENV)
 
 $UPDTOOL bulkcmd "amlmmc env"
 $UPDTOOL write $ENV $ENV_ADDR
-$UPDTOOL bulkcmd "env import -t $ENV_ADDR"
+$UPDTOOL bulkcmd "env import -t $ENV_ADDR $ENV_SIZE"
 $UPDTOOL write $KERNEL $KERNEL_ADDR
 $UPDTOOL write $INITRD $INITRD_ADDR
 echo 'Booting...'
