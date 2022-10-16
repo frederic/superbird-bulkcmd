@@ -53,23 +53,24 @@ A new USB device appears on host side :
 usb 1-1: New USB device found, idVendor=1b8e, idProduct=c003, bcdDevice= 0.07
 usb 1-1: New USB device strings: Mfr=0, Product=0, SerialNumber=0
 ```
-The device is now in *USB burning mode* (U-Boot shell over USB) : you can execute U-Boot commands using the [update](bin/update) tool, but you can't see any output (unless you open the device to connect the UART interface).
+6. Execute the following commands to enable U-Boot shell at every boot.
 
-## Boot kernel from USB to enable ADB access
-The script [scripts/upload-kernel.sh](scripts/upload-kernel.sh) uploads a Linux kernel image and boots it.
-The initramdisk includes an *initd* script that starts the ADB server.
-System partition is not modified, so this is not persistent.
-
-## \[OPTIONAL\] Enable U-Boot shell at every boot
-This command modifies the *env* partition. Changes are persistent, so it must be executed only once.
-
-*Note: if not connected to USB host, the device continues default boot sequence.*
+**WARNING: This step modifies the *env* partition. Changes are persistent, so it shall be executed only once.**
 ```shell
 ./bin/update bulkcmd 'amlmmc env'
 ./bin/update bulkcmd 'setenv storeargs ${storeargs} run update\;'
 ./bin/update bulkcmd 'env save'
 ```
+7. Reboot the device.
 
+After this modification, the device always boots in *USB burning mode* (U-Boot shell over USB) when connected to USB host : you can execute U-Boot commands using the [update](bin/update) tool, but you can't see any output (unless you open the device to connect the UART interface).
+
+*Note: if not connected to USB host, the device continues default boot sequence.*
+
+## Boot kernel from USB to enable ADB access
+Once the device in *USB burning mode*, the script [scripts/upload-kernel.sh](scripts/upload-kernel.sh) can upload a Linux kernel image and boot it.
+The initramdisk includes an *initd* script that starts the ADB server.
+System partition is not modified, so this is not persistent.
 
 # Additional scripts for advanced use cases
 
