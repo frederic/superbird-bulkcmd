@@ -16,4 +16,4 @@ $UPDTOOL bulkcmd "env import -t $ENV_ADDR $ENV_SIZE"
 $UPDTOOL write $KERNEL $KERNEL_ADDR
 $UPDTOOL write $INITRD $INITRD_ADDR
 echo 'Booting...'
-$UPDTOOL bulkcmd "booti $KERNEL_ADDR $INITRD_ADDR $DTB_ADDR"
+$UPDTOOL bulkcmd "booti $KERNEL_ADDR $INITRD_ADDR"

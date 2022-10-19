@@ -72,6 +72,16 @@ Once the device in *USB burning mode*, the script [scripts/upload-kernel.sh](scr
 The initramdisk includes an *initd* script that starts the ADB server.
 System partition is not modified, so this is not persistent.
 
+The ADB interface appears as a new USB device on the host:
+```
+usb 1-2: new high-speed USB device number 18 using xhci_hcd
+usb 1-2: New USB device found, idVendor=18d1, idProduct=4e40, bcdDevice= 2.23
+usb 1-2: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+usb 1-2: Product: Superbird
+usb 1-2: Manufacturer: Spotify
+usb 1-2: SerialNumber: 123456
+```
+
 # Additional scripts for advanced use cases
 
 ## U-Boot shell
