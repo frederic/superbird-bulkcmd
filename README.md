@@ -44,7 +44,7 @@ Can I go back to stock after installing custom OS's or messing up the stock imag
 The host should see a new USB device connection in `dmesg` like this one:
 ```text
 usb 1-1: New USB device found, idVendor=1b8e, idProduct=c003, bcdDevice= 0.20
-usb 1-1: New UDSB device strings: Mfr=1, Product=2, SerialNumber=0
+usb 1-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
 usb 1-1: Product: GX-CHIP
 usb 1-1: Manufacturer: Amlogic
 ```
@@ -86,6 +86,53 @@ usb 1-2: SerialNumber: 123456
 
 *Note: There is a script that is intended to be run from a UART shell included in scripts that will enable persistent ADB, but is not reccomended, as it will remove the abillity to OTA update. You can find that script [here](scripts/enable-adb.sh.client).*
 
+# Explanation
+When the Car Thing launched, it largely flew under most people's radar, and comically it wasn't until Spotify _deeply_ discounted it in late 2022, to $29.99 that it caught our eyes.
+
+This device was designed to be a simple music selection device that mounts to your car dashboard or air-vents. It is unfortunately very underpowered, with a lower-end Amlogic chip, the S905D2, paired with 500 _MB_ of RAM - ouch.
+
+When the device was discounted, I (Nolen) picked up a few units for security research, and messaged Fred shortly after starting to ask about collaborating on it - and comically he had independently already started.
+
+To start, U-boot and Linux kernel source code for this device is [public](https://github.com/spsgsb/) but advertised nowhere by Spotify.
+
+We discovered shortly into research, that holding buttons 1 & 4 on boot put the deivce into Amlogic's USB mode, where you can upload BL2 images! Sweet.
+
+We were able to upload a signed BL2, and then from there, upload a signed BL33, which kicked us into Amlogic's Burn Mode.
+
+From here we were able to execute U-Boot shell commands via Amlogic's `update` command, and the `bulkcmd` feature it houses.
+
+At this point, it became clear UART would aid our efforts, and with some simple voltage sniffing and an educated guess, we discerned the UART has the following pin-out:
+![Car Thing UART Pin-out](https://i.imgur.com/LpP9VgB.jpg)
+
+For our developmnet case, we wanted more persistent access to the UART pins, so we removed the sticker on the rear of the device, dissasembled, removed the rear heat-shield, and then filed out part of the case, as shown below
+![Car Thing UART Setup](https://i.imgur.com/vpUnuvx.jpg)
+
+Once we had UART console, we continued about, and crafted a method to enable a root shell over UART:
+```
+sudo update bulkcmd 'amlmmc env'
+sudo update bulkcmd 'setenv initargs init=/sbin/pre-init'
+sudo update bulkcmd 'setenv initargs ${initargs} ramoops.pstore_en=1'
+sudo update bulkcmd 'setenv initargs ${initargs} ramoops.record_size=0x8000'
+sudo update bulkcmd 'setenv initargs ${initargs} ramoops.console_size=0x4000'
+sudo update bulkcmd 'setenv initargs ${initargs} rootfstype=ext4'
+sudo update bulkcmd 'setenv initargs ${initargs} console=ttyS0,115200n8'
+sudo update bulkcmd 'setenv initargs ${initargs} no_console_suspend'
+sudo update bulkcmd 'setenv initargs ${initargs} earlycon=aml-uart,0xff803000'
+sudo update bulkcmd 'setenv storeargs ${storeargs} setenv avb2 0\;'
+sudo update bulkcmd 'setenv initargs ${initargs} ro root=/dev/mmcblk0p15'
+sudo update bulkcmd 'env save'
+```
+
+This gave us a local root shell, but still required UART - we took note that the device happened to have `adbd` locally installed, but not running.
+
+We realized it wasn't as simple as _just_ starting the daemon, we had to [disable](scripts/disable-avb2.sh) [Android Verified Boot](https://source.android.com/docs/security/features/verifiedboot), and configure the device's USB connection in an `init.d` script, as shown in [scripts/enable-adb.sh.client](scripts/enable-adb.sh.client).
+
+At this point we had full u-boot access, as well as persistent ADB (root) access, we initially wanted to try to bring-up Android Automotive on the device, but 500 MB of RAM made Android near-impossible to port.
+
+We also tried to get other GUI applications _cough_ maybe doom _cough_ running, but this device utilizes a QT feature called [EGLFS](https://doc.qt.io/qt-6/embedded-linux.html), which doesn't have a window management system like X11 or Wayland, so it is hard to get additional applications running on the device, but hey, maybe someone in the community can get it working using the access we're providing!
+
+We ended up settling on using a modified init-ramdisk loaded via USB to simplify attaining root-access for the end-user. Hope you enjoy!
+
 # Additional Scripts (for advanced use-cases)
 
 ## To Be Executed from U-Boot shell
@@ -106,12 +153,10 @@ usb 1-2: SerialNumber: 123456
 # Known Dangerous Actions
 - Many developers may (as we did) think that the easiest path to running custom code on this device would be to use the provided burn-mode access to run `update bulkcmd fastboot` and then `fastboot flashing unlock` the device. *BE WARNED*, this bricked every device we tried it on. You will end up with a blank, black scrren on boot, and we have yet to discern how to recover from this. This will be updated if this type of bricked device is recoverable.
 
-# Utilizing UART
-The UART pin-out is as shown below:
-![Car Thing UART Pin-out](https://i.imgur.com/LpP9VgB.jpg)
+# Disclosure Notes
+- October 20, 2022 - Intitial notice sent to Spotify
 
-For many developmnet cases, you may want more persistent access to the UART pins, you can remove the sticker on the rear of the device, dissasemble, remove the rear heat-shield, and then file out part of the case, as shown below
-![Car Thing UART Setup](https://i.imgur.com/vpUnuvx.jpg)
+*Note: This writeup doesn't technically warrant disclosure, as it doesn't leverage any specific vulnerabillities, but instead chains together what we suspect to be unintentional access venues to gain root-access.*
 
 # Credits
 - Frédéric Basse (frederic) & Nolen Johnson (npjohnson): The "exploit", writeup, debugging/developing/theorizing the methodologies used.
