@@ -1,6 +1,5 @@
 # [superbird-bulkcmd](https://github.com/frederic/superbird-bulkcmd)
 
-
 [Spotify Car Thing](https://carthing.spotify.com/) (superbird) resources to access U-Boot shell over USB. Not a bug, it is a ["feature"](https://miro.medium.com/max/1200/1*KDfUqn6c66axcbsTPPWSpQ.jpeg).
 
 ![Hacked Car Thing](https://i.imgur.com/VRjOR5v.jpg)
@@ -104,11 +103,12 @@ usb 1-2: SerialNumber: 123456
 ## To Be Executed from an ADB (root) Shell on Device
 - [scripts/enable-adb.sh.client](scripts/enable-adb.sh.client) : Modify the local file-system to start the ADB daemon on each boot. This will remove the abillity to OTA update the device, and there are no factory images yet - *MAKE SURE YOU USE THE DUMP SCRIPT ABOVE BEFORE UTILIZING THIS.* To use, open the script, and copy paste each command into an existing ADB (root) shell, or push to the device (renaming to `.sh`), and execute it.
 
+# Known Dangerous Actions
+- Many developers may (as we did) think that the easiest path to running custom code on this device would be to use the provided burn-mode access to run `update bulkcmd fastboot` and then `fastboot flashing unlock` the device. *BE WARNED*, this bricked every device we tried it on. You will end up with a blank, black scrren on boot, and we have yet to discern how to recover from this. This will be updated if this type of bricked device is recoverable.
+
 # Utilizing UART
 The UART pin-out is as shown below:
 ![Car Thing UART Pin-out](https://i.imgur.com/LpP9VgB.jpg)
-
-After hooking up to your UART adapter, you can r
 
 For many developmnet cases, you may want more persistent access to the UART pins, you can remove the sticker on the rear of the device, dissasemble, remove the rear heat-shield, and then file out part of the case, as shown below
 ![Car Thing UART Setup](https://i.imgur.com/vpUnuvx.jpg)
