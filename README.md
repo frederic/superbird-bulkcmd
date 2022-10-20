@@ -1,4 +1,4 @@
-# [superbird-bulkcmd](https://github.com/frederic/superbird-bulkcmd)
+# "NotABug" - [superbird-bulkcmd](https://github.com/frederic/superbird-bulkcmd)
 
 [Spotify Car Thing](https://carthing.spotify.com/) (superbird) resources to access U-Boot shell over USB. Not a bug, it is a ["feature"](https://miro.medium.com/max/1200/1*KDfUqn6c66axcbsTPPWSpQ.jpeg).
 
@@ -104,7 +104,7 @@ From here we were able to execute U-Boot shell commands via Amlogic's `update` c
 At this point, it became clear UART would aid our efforts, and with some simple voltage sniffing and an educated guess, we discerned the UART has the following pin-out:
 ![Car Thing UART Pin-out](https://i.imgur.com/LpP9VgB.jpg)
 
-For our developmnet case, we wanted more persistent access to the UART pins, so we removed the sticker on the rear of the device, dissasembled, removed the rear heat-shield, and then filed out part of the case, as shown below
+For our development case, we wanted more persistent access to the UART pins, so we removed the sticker on the rear of the device, dissasembled, removed the rear heat-shield, and then filed out part of the case, as shown below
 ![Car Thing UART Setup](https://i.imgur.com/vpUnuvx.jpg)
 
 Once we had UART console, we continued about, and crafted a method to enable a root shell over UART:
@@ -151,7 +151,7 @@ We ended up settling on using a modified init-ramdisk loaded via USB to simplify
 - [scripts/enable-adb.sh.client](scripts/enable-adb.sh.client) : Modify the local file-system to start the ADB daemon on each boot. This will remove the abillity to OTA update the device, and there are no factory images yet - *MAKE SURE YOU USE THE DUMP SCRIPT ABOVE BEFORE UTILIZING THIS.* To use, open the script, and copy paste each command into an existing ADB (root) shell, or push to the device (renaming to `.sh`), and execute it.
 
 # Known Dangerous Actions
-- Many developers may (as we did) think that the easiest path to running custom code on this device would be to use the provided burn-mode access to run `update bulkcmd fastboot` and then `fastboot flashing unlock` the device. *BE WARNED*, this bricked every device we tried it on. You will end up with a blank, black scrren on boot, and we have yet to discern how to recover from this. This will be updated if this type of bricked device is recoverable.
+- Many developers may (as we did) think that the easiest path to running custom code on this device would be to use the provided burn-mode access to run `update bulkcmd fastboot` and then `fastboot flashing unlock` the device. *BE WARNED*, this bricked every device we tried it on. You will end up with a blank, black screen on boot, and we have yet to discern how to recover from this. This will be updated if this type of bricked device is recoverable.
 
 # Disclosure Notes
 - October 20, 2022 - Intitial notice sent to Spotify
