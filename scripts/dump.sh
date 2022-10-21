@@ -19,4 +19,4 @@ $UPDTOOL mread store misc normal 0x800000 dump/misc.dump
 $UPDTOOL mread store settings normal 0x10000000 dump/settings.dump
 $UPDTOOL mread store system_a normal 0x2040B000 dump/system_a.dump
 $UPDTOOL mread store system_b normal 0x2040B000 dump/system_b.dump
-$UPDTOOL mread store data normal 0x889EA000 dump/data.dump
+$UPDTOOL mread store data normal 0x889EA000 dump/data.dump # if this command fails, try 0x859EA000 instead. Thanks bishopdynamics (issue #2 @ GitHub)
