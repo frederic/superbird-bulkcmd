@@ -1,3 +1,5 @@
+# Note, you must run disable-avb2.sh first!
+mount -o remount,rw /
 echo "mkdir -p /dev/usb-ffs">/etc/init.d/S49usbgadget
 echo "mkdir -p /dev/usb-ffs/adb">>/etc/init.d/S49usbgadget
 echo "mount -t configfs none /sys/kernel/config/">>/etc/init.d/S49usbgadget

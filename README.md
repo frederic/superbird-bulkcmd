@@ -155,6 +155,7 @@ We ended up settling on using a modified init-ramdisk loaded via USB to simplify
 
 # Disclosure Notes
 - October 20, 2022 - Intitial notice sent to Spotify
+- October 21, 2022 - Spotify responded on HackerOne stating that the product is unsupported, and end-of-life, and therefore no bugs would be accepted pertaining to the product
 
 *Note: This writeup doesn't technically warrant disclosure, as it doesn't leverage any specific vulnerabillities, but instead chains together what we suspect to be unintentional access venues to gain root-access.*
 
