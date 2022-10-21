@@ -33,6 +33,11 @@ Can I go back to stock after installing custom OS's or messing up the stock imag
 - /bin/: prebuilt set of required tools
   - [update](https://github.com/khadas/utils/blob/master/aml-flash-tool/tools/linux-x86/update): Client for the USB Burning protocol implemented in Amlogic bootloaders
 - /images/: prebuilt images to upload via USB
+  - [superbird.bl2.encrypted.bin](images/superbird.bl2.encrypted.bin) : dump of hardware partition *boot0* (mmcblk0boot0)
+  - [superbird.bootloader.img](images/superbird.bootloader.img) : dump of user partition *bootloader* (mmcblk0p01)
+  - [superbird.initrd-base.cpio](images/superbird.initrd-base.cpio) : created by provided script [extract-cpio.sh](scripts/extract-cpio.sh)
+  - [superbird.initrd.img](images/superbird.initrd.img) : created by provided script [pack-initrd.sh](scripts/pack-initrd.sh)
+  - [superbird.kernel.img](images/superbird.kernel.img) : zImage extracted from user partition *boot_a* (mmcblk0p12) + weird AML modifications reverted
 - /initrd/: files to customize the initrd image
 - /scripts/: scripts used to simplify interactions with the devices
 
